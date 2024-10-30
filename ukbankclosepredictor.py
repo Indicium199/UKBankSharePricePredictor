@@ -8,11 +8,12 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import accuracy_score
 
 # Fetch bank data
-banks = ['HSBA.L', 'LLOY.L', 'BARC.L', 'NWG.L', 'STAN.L']  # List of stocks
+banks = ['HSBA.L', 'LLOY.L', 'BARC.L', 'NWG.L', 'STAN.L']  # List of bank ticker names
 data = yf.download(banks, start='2020-01-01', end='2024-01-01')  # Get historical data
 
-# Keep only 'Close' prices for simplicity and drop any missing values
+# Extract 'Close' and 'High' prices for each stock
 close_prices = data['Close'].dropna()
+high_prices = data['High'].dropna()
 
 # Create a binary target variable: 1 if the price closes higher than the previous day, 0 otherwise
 for stock in banks:
@@ -20,9 +21,10 @@ for stock in banks:
 
 # Drop the first row due to NaN from shifting
 close_prices = close_prices.dropna()
+high_prices = high_prices.loc[close_prices.index]  # Align High prices with Close prices
 
-# Separate features (Close prices of each stock) and targets (binary outcome for each stock)
-X = close_prices[banks]
+# Concatenate Close and High prices as features
+X = pd.concat([close_prices[banks], high_prices.add_suffix('_High')], axis=1)
 y = close_prices[[f'{stock}_target' for stock in banks]]
 
 # Split the data into train and test sets (80% train, 20% test)
@@ -33,8 +35,10 @@ scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
-# Define the MLPClassifier model with a similar architecture to the previous Sequential model
-model = MLPClassifier(hidden_layer_sizes=(64, 32), activation='relu', solver='adam', max_iter=200, random_state=42)
+# Define the MLPClassifier model with a similar architecture
+model = MLPClassifier(hidden_layer_sizes=(64, 32), activation='relu', solver='adam', max_iter=1000, random_state=42, 
+                      learning_rate_init=0.001)
+
 
 # Train the model
 model.fit(X_train_scaled, y_train)
