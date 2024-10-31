@@ -75,3 +75,8 @@ for idx, (date, features) in enumerate(X_test.iterrows()):
 # Convert to DataFrame and display
 output_df = pd.DataFrame(output_data).sort_values(by='date', ascending=False).reset_index(drop=True)
 print(output_df.head())
+
+# Calculate and print the test accuracy score
+test_accuracy = accuracy_score(y_test, predictions)
+print(f"Test Accuracy: {test_accuracy:.4f}")
+
