@@ -9,7 +9,8 @@ from sklearn.metrics import accuracy_score
 
 # Fetch bank data
 banks = ['HSBA.L', 'LLOY.L', 'BARC.L', 'NWG.L', 'STAN.L']  # List of bank ticker names
-data = yf.download(banks, start='2020-01-01', end='2024-01-01')  # Get historical data
+data = yf.download(banks, start='2020-01-01', end='2024-10-29')  # Get historical data
+
 
 # Extract 'Close' and 'High' prices for each stock
 close_prices = data['Close'].dropna()
@@ -40,29 +41,30 @@ model = MLPClassifier(hidden_layer_sizes=(64, 32), activation='relu', solver='ad
                       learning_rate_init=0.001)
 
 
-# Train the model
-model.fit(X_train_scaled, y_train)
+# Calculate the split point
+split_point = int(len(X) * 0.8)
 
-# Make predictions on the test set
+# Split the data manually to ensure the latest dates are in the test set
+X_train, X_test = X.iloc[:split_point], X.iloc[split_point:]
+y_train, y_test = y.iloc[:split_point], y.iloc[split_point:]
+
+# Normalize and scale as before
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Train and predict with the model
+model.fit(X_train_scaled, y_train)
 predictions = model.predict(X_test_scaled)
 
-# Calculate the accuracy
-test_accuracy = accuracy_score(y_test, predictions)
-print(f"Test Accuracy: {test_accuracy:.4f}")
-
-# Prepare the output table
+# Prepare output as before
 output_data = []
 
-# Iterate over each date in the test set
 for idx, (date, features) in enumerate(X_test.iterrows()):
     for i, bank in enumerate(banks):
-        # Get the previous day's close price
         previous_close = features[bank]
-        
-        # Predicted label: 1 means price is predicted to go up, 0 means down
         predicted_price = "Up" if predictions[idx, i] == 1 else "Down"
         
-        # Append the row to the output data
         output_data.append({
             'date': date,
             'bank name': bank,
@@ -70,11 +72,6 @@ for idx, (date, features) in enumerate(X_test.iterrows()):
             'predicted price': predicted_price
         })
 
-# Convert the output data to a DataFrame
-output_df = pd.DataFrame(output_data)
-
-# Display the first few rows of the output DataFrame
+# Convert to DataFrame and display
+output_df = pd.DataFrame(output_data).sort_values(by='date', ascending=False).reset_index(drop=True)
 print(output_df.head())
-
-# Optionally, save the output to a CSV file
-# output_df.to_csv('predicted_prices.csv', index=False)
