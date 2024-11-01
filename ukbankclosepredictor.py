@@ -9,7 +9,7 @@ from sklearn.metrics import accuracy_score
 
 # Fetch bank data
 banks = ['HSBA.L', 'LLOY.L', 'BARC.L', 'NWG.L', 'STAN.L']  # List of bank ticker names
-data = yf.download(banks, start='2020-01-01', end='2024-10-29')  # Get historical data
+data = yf.download(banks, start='2020-01-01', end='2024-11-01')  # Get historical data
 
 
 # Extract 'Close' and 'High' prices for each stock
