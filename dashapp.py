@@ -69,10 +69,15 @@ def render_content(tab):
                     width=6  # Span half the page (6 out of 12 columns)
                 )
             ]),
-            # Add additional content for the HSBC tab below the title bar
-            html.Div([
-                html.P('Here you can analyze HSBC data...'),
-                # Add more content as needed
+            # Additional content for the HSBC tab below the title bar
+            dbc.Row([
+                dbc.Col(
+                    html.Div([
+                        html.P('HSBC Holdings plc provides banking and financial services worldwide. The company operates through Wealth and Personal Banking, Commercial Banking, and Global Banking and Markets segments.'),
+                        # Add more content as needed
+                    ]),
+                    width={"size": 4, "offset": 4},  # Same width as the card
+                )
             ])
         ])
     elif tab == 'tab4':
